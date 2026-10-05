@@ -1,0 +1,59 @@
+{
+  "name": "omniroute-positron-status",
+  "displayName": "OmniRoute Status",
+  "description": "Shows which OmniRoute combo step is answering, fallback state and remaining provider quota.",
+  "version": "1.2.0",
+  "publisher": "omeredgar",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "omniroute.refresh",
+        "title": "OmniRoute: Refresh status"
+      },
+      {
+        "command": "omniroute.openDashboard",
+        "title": "OmniRoute: Open dashboard"
+      }
+    ],
+    "configuration": {
+      "title": "OmniRoute",
+      "properties": {
+        "omniroute.comboName": {
+          "type": "string",
+          "default": "my-pro-fallback",
+          "description": "Combo whose active step is shown."
+        },
+        "omniroute.dbPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to storage.sqlite (empty = ~/.omniroute/storage.sqlite)."
+        },
+        "omniroute.refreshSeconds": {
+          "type": "number",
+          "default": 5,
+          "minimum": 3
+        },
+        "omniroute.lowQuotaPercent": {
+          "type": "number",
+          "default": 10,
+          "description": "Warn when the Claude quota drops below this percentage."
+        },
+        "omniroute.dashboardUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:20128/dashboard"
+        }
+      }
+    }
+  }
+}

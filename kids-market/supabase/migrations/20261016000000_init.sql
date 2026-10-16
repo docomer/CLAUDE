@@ -71,7 +71,7 @@ create table public.fairs (
   description text not null default '' check (char_length(description) <= 500),
   starts_at timestamptz not null,
   ends_at timestamptz not null,
-  organizer_id uuid not null references public.profiles (id),
+  organizer_id uuid references public.profiles (id) on delete set null,
   invite_code text not null unique default public.gen_code(8),
   created_at timestamptz not null default now(),
   check (ends_at > starts_at)
@@ -111,7 +111,7 @@ create table public.listings (
   photos text[] not null check (cardinality(photos) between 1 and 4),
   status text not null default 'pending'
     check (status in ('pending', 'active', 'rejected', 'reserved', 'sold', 'withdrawn', 'removed')),
-  reviewed_by uuid references public.profiles (id),
+  reviewed_by uuid references public.profiles (id) on delete set null,
   reviewed_at timestamptz,
   rejection_reason text check (char_length(rejection_reason) <= 300),
   created_at timestamptz not null default now()
@@ -155,7 +155,7 @@ create table public.deals (
   price int not null check (price between 1 and 100),
   status text not null default 'awaiting_parent'
     check (status in ('awaiting_parent', 'approved', 'declined', 'completed', 'cancelled')),
-  decided_by uuid references public.profiles (id),
+  decided_by uuid references public.profiles (id) on delete set null,
   decided_at timestamptz,
   buyer_confirmed boolean not null default false,
   seller_confirmed boolean not null default false,
@@ -185,7 +185,7 @@ create table public.reports (
   target_id uuid not null,
   reason text not null check (char_length(btrim(reason)) between 2 and 500),
   status text not null default 'open' check (status in ('open', 'resolved')),
-  resolved_by uuid references public.profiles (id),
+  resolved_by uuid references public.profiles (id) on delete set null,
   resolved_at timestamptz,
   created_at timestamptz not null default now()
 );
@@ -206,9 +206,17 @@ create table public.notifications (
   body text not null default '',
   link text not null default '/',
   read_at timestamptz,
+  pushed_at timestamptz,
   created_at timestamptz not null default now()
 );
+create index on public.notifications (created_at) where pushed_at is null;
 create index on public.notifications (user_id, created_at desc);
+
+-- מייל להתראות (רק ההורה עצמו רואה).
+create table public.parent_contacts (
+  user_id uuid primary key references public.profiles (id) on delete cascade,
+  email text check (email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$')
+);
 
 create table public.push_subscriptions (
   id uuid primary key default gen_random_uuid(),
@@ -319,6 +327,7 @@ alter table public.reports enable row level security;
 alter table public.blocks enable row level security;
 alter table public.notifications enable row level security;
 alter table public.push_subscriptions enable row level security;
+alter table public.parent_contacts enable row level security;
 
 create policy families_select on public.families for select to authenticated
   using (id = public.my_family() or public.is_admin());
@@ -384,6 +393,13 @@ create policy blocks_select on public.blocks for select to authenticated
 create policy notifications_select on public.notifications for select to authenticated
   using (user_id = auth.uid());
 create policy notifications_update on public.notifications for update to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create policy contacts_select on public.parent_contacts for select to authenticated
+  using (user_id = auth.uid());
+create policy contacts_insert on public.parent_contacts for insert to authenticated
+  with check (user_id = auth.uid() and public.my_role() = 'parent');
+create policy contacts_update on public.parent_contacts for update to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 create policy push_select on public.push_subscriptions for select to authenticated
@@ -454,7 +470,8 @@ begin
     if public.is_blocked(conv.buyer_family_id, conv.seller_family_id) then
       raise exception 'השיחה הזו חסומה';
     end if;
-    if sender_role = 'kid' and new.kind = 'text' then
+    -- גם הודעות מוכנות עוברות סינון, כי הלקוח יכול לשלוח כל טקסט בתור "template".
+    if sender_role = 'kid' then
       new.body := public.filter_kid_text(new.body);
       new.filtered := new.body <> original;
     end if;

@@ -1,0 +1,657 @@
+<title>הדגמת היריד</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: phone-width app column, sticky persona bar on top, fixed tab bar at the bottom — mirrors the real app */
+:root {
+  --bg: #fffaf3; --card: #ffffff; --fg: #2a2140; --muted: #6f6787; --line: #ece4f5;
+  --soft: #f3edfb; --brand: #7c3aed; --brand-fg: #ffffff; --accent: #f59e0b; --danger: #dc2626;
+  --ok-bg: #d1fae5; --ok-fg: #065f46; --warn-bg: #fef3c7; --warn-fg: #78350f; --bad-bg: #fee2e2; --bad-fg: #7f1d1d;
+  --font: "Rubik", "Arial Hebrew", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #17131f; --card: #211b2d; --fg: #f1ecfa; --muted: #a69fbd; --line: #342b45; --soft: #2c2440;
+  --brand: #a78bfa; --brand-fg: #1a1027; --accent: #fbbf24; --danger: #f87171;
+  --ok-bg: #064e3b; --ok-fg: #d1fae5; --warn-bg: #4a3410; --warn-fg: #fde68a; --bad-bg: #4c1414; --bad-fg: #fecaca; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #17131f; --card: #211b2d; --fg: #f1ecfa; --muted: #a69fbd; --line: #342b45; --soft: #2c2440;
+  --brand: #a78bfa; --brand-fg: #1a1027; --accent: #fbbf24; --danger: #f87171;
+  --ok-bg: #064e3b; --ok-fg: #d1fae5; --warn-bg: #4a3410; --warn-fg: #fde68a; --bad-bg: #4c1414; --bad-fg: #fecaca; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 16px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--card); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+h1, h2 { text-wrap: balance; margin: 0; line-height: 1.25; }
+h1 { font-size: 1.5rem; font-weight: 700; }
+h2 { font-size: 1.15rem; font-weight: 700; }
+p { margin: 0; }
+.wrap { max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+.demo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: var(--card); border-bottom: 1px solid var(--line); }
+.demo .wrap { padding-block: 8px; display: flex; flex-direction: column; gap: 6px; }
+.demo-label { font-size: .78rem; color: var(--muted); letter-spacing: .02em; display: flex; justify-content: space-between; gap: 8px; }
+.demo-label button { background: none; border: 0; color: var(--brand); padding: 0; font-size: .78rem; }
+.personas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.persona { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 10px 4px 6px; font-size: .9rem; }
+.persona[aria-pressed="true"] { background: var(--brand); color: var(--brand-fg); border-color: var(--brand); }
+.persona .dot { min-width: 18px; height: 18px; border-radius: 9px; background: var(--danger); color: #fff; font-size: .7rem; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+header.app .wrap { height: 52px; display: flex; align-items: center; justify-content: space-between; }
+.logo { font-weight: 800; font-size: 1.2rem; color: var(--brand); background: none; border: 0; padding: 0; }
+.bell { position: relative; background: none; border: 0; font-size: 1.4rem; padding: 4px; }
+.bell .dot { position: absolute; top: -2px; left: -6px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--danger); color: #fff; font-size: .7rem; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+main .wrap { padding-block: 8px 120px; display: flex; flex-direction: column; gap: 16px; }
+.sub { color: var(--muted); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+.card.hl { background: var(--soft); border-color: var(--brand); }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.row > .grow { flex: 1; min-width: 0; }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+.price { color: var(--brand); font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 600; background: var(--brand); color: var(--brand-fg); }
+.btn.sec { background: var(--soft); color: var(--fg); }
+.btn.ghost { background: none; color: var(--brand); padding: 8px 10px; }
+.btn.danger { background: var(--danger); color: #fff; }
+.btn.full { width: 100%; }
+.btn.sm { padding: 8px 12px; font-size: .9rem; }
+.btn:disabled { opacity: .45; cursor: default; }
+
+.av { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--soft); flex-shrink: 0; width: 36px; height: 36px; font-size: 1.3rem; }
+.av.sm { width: 24px; height: 24px; font-size: .95rem; }
+.av.lg { width: 72px; height: 72px; font-size: 2.6rem; }
+
+.badge { display: inline-block; border-radius: 999px; padding: 2px 10px; font-size: .8rem; font-weight: 500; background: var(--soft); }
+.badge.ok { background: var(--ok-bg); color: var(--ok-fg); }
+.badge.warn { background: var(--warn-bg); color: var(--warn-fg); }
+.badge.bad { background: var(--bad-bg); color: var(--bad-fg); }
+.badge.brand { background: var(--brand); color: var(--brand-fg); }
+
+.chips { display: flex; gap: 6px; overflow-x: auto; margin-inline: -16px; padding-inline: 16px; scrollbar-width: none; }
+.chip { flex: 0 0 auto; border: 0; border-radius: 999px; padding: 6px 12px; background: var(--soft); font-size: .9rem; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--brand); color: var(--brand-fg); }
+
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; text-align: start; padding: 0; display: flex; flex-direction: column; }
+.tile.dim { opacity: .65; }
+.pic { aspect-ratio: 1; max-width: 100%; display: flex; align-items: center; justify-content: center; font-size: 3.6rem; position: relative; background-size: cover; background-position: center; }
+.pic .badge { position: absolute; top: 8px; right: 8px; }
+.tile .body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 2px; }
+.tile .t { font-weight: 700; line-height: 1.3; }
+.hero-pic { border-radius: 20px; font-size: 7rem; }
+
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; text-align: center; }
+.stats b { display: block; font-size: 1.7rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+label.f { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+label.f .hint { font-weight: 400; font-size: .85rem; color: var(--muted); }
+.in { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 11px 12px; font-weight: 400; }
+textarea.in { resize: vertical; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; }
+.check input { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; }
+.photos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.photos .ph { aspect-ratio: 1; border-radius: 12px; background: var(--soft) center / cover; position: relative; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+.photos .ph button { position: absolute; top: 4px; left: 4px; width: 22px; height: 22px; border-radius: 11px; border: 0; background: rgba(0,0,0,.6); color: #fff; font-size: .75rem; }
+.photos label.ph { border: 2px dashed var(--line); background: none; cursor: pointer; }
+.err { color: var(--danger); font-weight: 500; }
+.okmsg { color: var(--ok-fg); background: var(--ok-bg); border-radius: 12px; padding: 10px 12px; }
+
+.msgs { display: flex; flex-direction: column; gap: 8px; }
+.sys { text-align: center; font-size: .875rem; background: var(--soft); border-radius: 12px; padding: 8px 12px; }
+.m { display: flex; gap: 6px; align-items: flex-end; }
+.m.mine { flex-direction: row-reverse; }
+.bubble { max-width: 78%; border-radius: 18px; padding: 8px 12px; background: var(--card); border: 1px solid var(--line); overflow-wrap: anywhere; }
+.m.mine .bubble { background: var(--brand); color: var(--brand-fg); border-color: var(--brand); }
+.bubble .who { font-size: .75rem; opacity: .75; }
+.bubble .note { font-size: .75rem; opacity: .8; margin-top: 2px; }
+.bubble .in { color: var(--fg); }
+.composer { position: sticky; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); background: var(--bg); padding-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.inline { display: flex; gap: 8px; }
+.inline .in { flex: 1; min-width: 0; }
+
+nav.tabs { position: fixed; bottom: 0; inset-inline: 0; z-index: 8; background: var(--card); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+nav.tabs .wrap { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding-inline: 0; }
+nav.tabs button { background: none; border: 0; padding: 8px 0; display: flex; flex-direction: column; align-items: center; font-size: .82rem; color: var(--muted); }
+nav.tabs button span { font-size: 1.4rem; line-height: 1.2; }
+nav.tabs button[aria-current="page"] { color: var(--brand); font-weight: 600; }
+
+.pin { display: flex; justify-content: center; gap: 12px; direction: ltr; }
+.pin i { width: 18px; height: 18px; border-radius: 9px; background: var(--soft); }
+.pin i.on { background: var(--brand); }
+.pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 240px; margin: 0 auto; direction: ltr; }
+.pad button { height: 58px; border-radius: 16px; border: 0; background: var(--soft); font-size: 1.4rem; font-weight: 700; }
+
+.toast { position: fixed; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 14px; z-index: 20; max-width: calc(100% - 32px); text-align: center; }
+details > summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
+@media (prefers-reduced-motion: no-preference) { .toast { animation: up .2s ease-out; } @keyframes up { from { transform: translate(-50%, 8px); opacity: 0; } } }
+</style>
+
+<div class="demo" role="region" aria-label="בחירת דמות להדגמה">
+  <div class="wrap">
+    <div class="demo-label"><span>הדגמה עם נתונים לדוגמה · בחרו מי אתם:</span><button type="button" data-a="reset">איפוס ההדגמה</button></div>
+    <div class="personas" id="personas"></div>
+  </div>
+</div>
+<header class="app"><div class="wrap"><button class="logo" data-a="go" data-v="home">🎪 היריד</button><div class="row" id="hdr"></div></div></header>
+<main><div class="wrap" id="view"></div></main>
+<nav class="tabs" aria-label="ניווט"><div class="wrap" id="tabs"></div></nav>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+// ───── תוכן (כמו src/lib/content.ts באפליקציה) ─────
+const CATEGORIES = { toys: "צעצועים", books: "ספרים", games: "משחקים", lego: "לגו והרכבות", dolls: "בובות", sports: "ספורט", crafts: "יצירה", other: "אחר" };
+const CONDITIONS = { new: "חדש", like_new: "כמו חדש", used: "משומש" };
+const STATUS = { pending: "ממתין לאישור הורה", active: "במכירה", rejected: "לא אושר", reserved: "שמור לקונה", sold: "נמכר", withdrawn: "הורד" };
+const DEAL_STATUS = { awaiting_parent: "מחכה לאישור הורה הקונה", approved: "אושר — מתאמים מסירה", declined: "לא אושר", completed: "הושלם ✅", cancelled: "בוטל" };
+const STICKERS = { trusted: "🤝 מוכר/ת אמין/ה", polite: "😊 מנומס/ת", fast: "⚡ מהיר/ה", great_item: "🌟 פריט מעולה", fair_price: "💰 מחיר הוגן", friendly: "💛 חברותי/ת" };
+const BUYER_T = ["היי! זה עדיין זמין?", "וואו, נראה ממש מגניב! 😍", "הכל עובד בו?", "תודה רבה!"];
+const SELLER_T = ["היי! כן, זה עדיין זמין 😊", "הכל עובד מעולה!", "אפשר לשאול את ההורים שלי מתי נוח למסור", "תודה רבה!"];
+const FORBIDDEN = ["אוכל וממתקים", "בעלי חיים", "תרופות", "נשק או חיקויי נשק", "טלפונים וטאבלטים"];
+const CHECKLIST = ["הפריט שייך לילד ומותר לו למכור אותו", "הפריט לא ברשימת הפריטים האסורים", "אין פנים, שמות או כתובות בתמונות", "המחיר סביר"];
+const MAX_PRICE = 100;
+
+const PEOPLE = {
+  noa:   { id: "noa",   role: "kid",    fam: "cohen", nick: "נועה הסוחרת", full: "נועה כהן", av: "🦊" },
+  itai:  { id: "itai",  role: "kid",    fam: "levi",  nick: "איתי",        full: "איתי לוי", av: "🦁" },
+  yoav:  { id: "yoav",  role: "kid",    fam: "ben",   nick: "יואב",        full: "יואב בן דוד", av: "🐸" },
+  dana:  { id: "dana",  role: "parent", fam: "cohen", nick: "דנה",         full: "דנה כהן (אמא של נועה)", av: "🦉" },
+  yossi: { id: "yossi", role: "parent", fam: "levi",  nick: "יוסי",        full: "יוסי לוי (אבא של איתי)", av: "🦉" },
+};
+const PERSONA_ORDER = ["noa", "itai", "dana", "yossi"];
+const PERSONA_HINT = { noa: "ילדה מוכרת", itai: "ילד קונה", dana: "אמא של נועה", yossi: "אבא של איתי" };
+
+// ───── מסנן טקסט לילדים (כמו filter_kid_text במסד הנתונים) ─────
+function filterKid(t) {
+  return t
+    .replace(/(https?:\/\/\S+|www\.\S+)/gi, "🚫")
+    .replace(/\S+@\S+\.\S+/g, "🚫")
+    .replace(/\S+\.(com|co\.il|org\.il|net|org|io|me|ly|app|link)(\/\S*)?/gi, "🚫")
+    .replace(/\+?(\d[\s.\-]?){6,}\d/g, "🚫")
+    .replace(/(רחוב|רח'|רח׳|שדרות|שד'|שד׳|דירה|קומה|כניסה|בניין)\s*\S*/g, "🚫")
+    .replace(/(whatsapp|וואטסאפ|ווטסאפ|ווצאפ|וואצאפ|instagram|אינסטגרם|אינסטה|tiktok|טיקטוק|telegram|טלגרם|snapchat|סנאפ)/gi, "🚫")
+    .replace(/@\w+/g, "🚫");
+}
+
+// ───── נתונים לדוגמה ─────
+function seed() {
+  return {
+    me: "noa", view: "home", cat: "", seq: 100,
+    listings: [
+      { id: "l1", seller: "noa",  title: "חללית לגו", coolest: "יש לה אורות שנדלקים ותא סודי לאסטרונאוט!", desc: "כל החלקים בקופסה המקורית.", price: 80, cat: "lego", cond: "like_new", emoji: "🚀", bg: "#dbeafe", status: "active" },
+      { id: "l2", seller: "noa",  title: "הארי פוטר ואבן החכמים", coolest: "קראתי אותו 3 פעמים — הוא פשוט קסום", desc: "", price: 25, cat: "books", cond: "used", emoji: "📕", bg: "#fee2e2", status: "active" },
+      { id: "l3", seller: "yoav", title: "כדורגל מקצועי", coolest: "חתום על ידי כל הקבוצה שלי בחוג!", desc: "", price: 30, cat: "sports", cond: "used", emoji: "⚽", bg: "#dcfce7", status: "active" },
+      { id: "l4", seller: "yoav", title: "בובת חד-קרן", coolest: "הקרן זוהרת בחושך ✨", desc: "", price: 40, cat: "dolls", cond: "like_new", emoji: "🦄", bg: "#fae8ff", status: "active" },
+      { id: "l5", seller: "yoav", title: "משחק קופסה מונופול", coolest: "גרסת ג׳וניור — משחק מהיר ומצחיק", desc: "", price: 35, cat: "games", cond: "used", emoji: "🎲", bg: "#fef3c7", status: "sold" },
+      { id: "l6", seller: "noa",  title: "סט צבעי פסטל", coolest: "48 צבעים, כולל זהב וכסף!", desc: "", price: 15, cat: "crafts", cond: "new", emoji: "🖍️", bg: "#ffedd5", status: "pending" },
+    ],
+    convs: [
+      { id: "c1", listing: "l1", buyer: "itai", msgs: [
+        { id: "m1", from: "itai", kind: "template", body: "היי! זה עדיין זמין?" },
+        { id: "m2", from: "noa", kind: "template", body: "היי! כן, זה עדיין זמין 😊" },
+        { id: "m3", from: "itai", kind: "text", body: "תתקשרי אליי 🚫 אני גר ב🚫", filtered: true },
+        { id: "m4", from: "itai", kind: "offer", amount: 60, status: "pending" },
+      ] },
+    ],
+    deals: [],
+    stickers: [{ to: "yoav", key: "trusted" }],
+    notes: { noa: [{ t: "הצעת מחיר חדשה: 60 ₪", b: "חללית לגו", v: "chat:c1" }], dana: [{ t: "מודעה חדשה ממתינה לאישור", b: "נועה הסוחרת רוצה למכור: סט צבעי פסטל", v: "parent" }], itai: [], yossi: [] },
+  };
+}
+
+let S;
+try { S = JSON.parse(localStorage.getItem("yarid-demo") || "null"); } catch (e) { S = null; }
+if (!S || !S.listings) S = seed();
+function save() { try { localStorage.setItem("yarid-demo", JSON.stringify(S)); } catch (e) {} }
+
+// ───── עזרים ─────
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const me = () => PEOPLE[S.me];
+const P = (id) => PEOPLE[id];
+const L = (id) => S.listings.find((l) => l.id === id);
+const C = (id) => S.convs.find((c) => c.id === id);
+const nid = (p) => p + (++S.seq);
+const parentsOf = (fam) => Object.values(PEOPLE).filter((p) => p.role === "parent" && p.fam === fam).map((p) => p.id);
+const notify = (ids, t, b, v) => ids.forEach((id) => (S.notes[id] ||= []).unshift({ t, b, v }));
+const unread = (id) => (S.notes[id] || []).length;
+const av = (p, cls = "") => `<span class="av ${cls}" aria-hidden="true">${p.av}</span>`;
+const pic = (l, extra = "", fs = "") => l.photo
+  ? `<div class="pic ${extra}" style="background-image:url('${l.photo}')"></div>`
+  : `<div class="pic ${extra}" style="background:${l.bg};${fs ? `font-size:${fs}` : ""}">${l.emoji}</div>`;
+const statusBadge = (s) => `<span class="badge ${s === "sold" ? "ok" : s === "active" ? "brand" : s === "pending" || s === "reserved" ? "warn" : s === "rejected" ? "bad" : ""}">${STATUS[s]}</span>`;
+const dealOf = (convId) => S.deals.filter((d) => d.conv === convId).slice(-1)[0];
+function toast(t) { const el = $("#toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => (el.hidden = true), 2600); }
+function go(v) { S.view = v; save(); render(); window.scrollTo({ top: 0 }); }
+
+// ───── מסכים ─────
+function viewHome() {
+  const u = me();
+  const items = S.listings.filter((l) => ["active", "reserved", "sold"].includes(l.status) && (!S.cat || l.cat === S.cat));
+  return `
+    <div><h1>🎪 יריד המשפחה</h1><p class="sub">פתוח עד יום שישי · 3 משפחות</p></div>
+    ${u.role === "kid" ? `<div><button class="btn" data-a="go" data-v="sell">➕ למכור משהו</button></div>` : `<div class="card hl small">👀 כהורה את/ה רואה את היריד כמו הילדים. קניות ומכירות עושים הילדים, ואת/ה מאשר/ת.</div>`}
+    <div class="chips" role="group" aria-label="קטגוריות">
+      <button class="chip" data-a="cat" data-v="" aria-pressed="${!S.cat}">הכל</button>
+      ${Object.entries(CATEGORIES).map(([k, v]) => `<button class="chip" data-a="cat" data-v="${k}" aria-pressed="${S.cat === k}">${v}</button>`).join("")}
+    </div>
+    ${items.length ? `<div class="grid2">${items.map((l) => {
+      const s = P(l.seller);
+      return `<button class="tile ${l.status !== "active" ? "dim" : ""}" data-a="go" data-v="listing:${l.id}">
+        ${pic(l).replace("</div>", (l.status !== "active" ? statusBadge(l.status) : "") + "</div>")}
+        <div class="body"><span class="t">${esc(l.title)}</span><span class="price">${l.price} ₪</span>
+        <span class="row small muted">${av(s, "sm")}${esc(s.nick)}</span></div></button>`;
+    }).join("")}</div>` : `<p class="muted" style="text-align:center;padding:32px 0">אין כאן מודעות בקטגוריה הזו 🧸</p>`}`;
+}
+
+function viewListing(id) {
+  const l = L(id), u = me(), s = P(l.seller);
+  const mine = s.fam === u.fam;
+  const conv = S.convs.find((c) => c.listing === id && c.buyer === u.id);
+  const st = S.stickers.filter((x) => x.to === s.id).reduce((a, x) => ((a[x.key] = (a[x.key] || 0) + 1), a), {});
+  return `
+    <button class="btn ghost" data-a="go" data-v="home" style="align-self:flex-start">→ חזרה ליריד</button>
+    ${pic(l, "hero-pic")}
+    <div class="stack" style="gap:6px">
+      <div class="row"><h1 class="grow">${esc(l.title)}</h1><span class="price" style="font-size:1.5rem">${l.price} ₪</span></div>
+      <div class="row" style="flex-wrap:wrap;gap:6px"><span class="badge">${CATEGORIES[l.cat]}</span><span class="badge">${CONDITIONS[l.cond]}</span>${l.status !== "active" ? statusBadge(l.status) : ""}</div>
+    </div>
+    <div class="card hl"><b>⭐ למה זה הכי מגניב?</b><p style="font-size:1.1rem">${esc(l.coolest)}</p></div>
+    ${l.desc ? `<p>${esc(l.desc)}</p>` : ""}
+    ${l.status === "rejected" && l.reason ? `<div class="card" style="border-color:var(--danger)">ההורים כתבו: ${esc(l.reason)}</div>` : ""}
+    <div class="card row">${av(s)}<div class="grow"><b>${esc(s.nick)}</b><div class="small muted">${esc(s.full)}</div>
+      ${Object.keys(st).length ? `<div class="row small" style="flex-wrap:wrap;gap:4px;margin-top:4px">${Object.entries(st).map(([k, n]) => `<span class="badge">${STICKERS[k]} ×${n}</span>`).join("")}</div>` : ""}</div></div>
+    ${u.role === "kid" && !mine ? (conv ? `<button class="btn full" data-a="go" data-v="chat:${conv.id}">💬 לשיחה עם המוכר/ת</button>`
+      : l.status === "active" ? `<button class="btn full" data-a="startChat" data-v="${l.id}" style="font-size:1.1rem">אני רוצה את זה! 💬</button>` : "") : ""}
+    ${mine && ["pending", "active", "rejected"].includes(l.status) ? `<button class="btn sec" data-a="withdraw" data-v="${l.id}">הורדת המודעה</button>` : ""}
+    ${!mine ? `<details><summary>🚩 דיווח</summary><div class="inline" style="margin-top:8px"><input class="in" id="rep-${l.id}" placeholder="מה לא בסדר?"><button class="btn sec sm" data-a="report">שליחה</button></div></details>` : ""}`;
+}
+
+function viewSell() {
+  const d = S.draft || (S.draft = { photos: [] });
+  return `
+    <div><h1>מה מוכרים היום? 🧸</h1><p class="sub">אחרי שתפרסמו, ההורים יאשרו את המודעה</p></div>
+    <form id="sell" class="stack" style="gap:14px" novalidate>
+      <div class="f stack" style="gap:4px"><b>תמונות (עד 4)</b><span class="small muted">צלמו רק את הצעצוע, בלי פנים של אנשים 📸 · מיקום GPS נמחק אוטומטית</span>
+        <div class="photos">
+          ${d.photos.map((p, i) => `<div class="ph" style="background-image:url('${p}')"><button type="button" data-a="rmPhoto" data-v="${i}" aria-label="הסרת תמונה">✕</button></div>`).join("")}
+          ${d.photos.length < 4 ? `<label class="ph" for="photo-in">📷<input id="photo-in" type="file" accept="image/*" multiple hidden></label>` : ""}
+        </div>
+        <span class="small muted">בהדגמה אפשר גם בלי תמונה — נשים אמוג׳י במקומה.</span>
+      </div>
+      <label class="f">מה זה?<input class="in" id="s-title" maxlength="60" placeholder="למשל: חללית לגו"></label>
+      <div class="card hl"><label class="f">⭐ למה זה הכי מגניב?<span class="hint">שכנעו את הקונים!</span><textarea class="in" id="s-cool" rows="2" maxlength="200" placeholder="יש לה אורות שנדלקים ותא סודי!"></textarea></label></div>
+      <div class="grid2">
+        <label class="f">קטגוריה<select class="in" id="s-cat">${Object.entries(CATEGORIES).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select></label>
+        <label class="f">מצב<select class="in" id="s-cond">${Object.entries(CONDITIONS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select></label>
+      </div>
+      <label class="f">מחיר (₪)<span class="hint">עד ${MAX_PRICE} ₪</span><input class="in" id="s-price" type="number" inputmode="numeric" min="1" max="${MAX_PRICE}"></label>
+      <p class="small muted">🚫 אסור למכור: ${FORBIDDEN.join(" · ")}</p>
+      <p id="s-err" class="err" hidden></p>
+      <button class="btn full" type="submit" style="font-size:1.1rem">שליחה לאישור ההורים 🚀</button>
+    </form>`;
+}
+
+function viewChats() {
+  const u = me();
+  const list = S.convs.filter((c) => {
+    const l = L(c.listing);
+    return u.role === "kid" ? (c.buyer === u.id || l.seller === u.id) : (P(c.buyer).fam === u.fam || P(l.seller).fam === u.fam);
+  });
+  return `<h1>צ׳אטים 💬</h1>
+    ${list.length ? `<div class="stack">${list.map((c) => {
+      const l = L(c.listing), last = c.msgs[c.msgs.length - 1];
+      const buying = P(c.buyer).fam === u.fam;
+      const other = P(buying ? l.seller : c.buyer);
+      const prefix = u.role === "parent" ? `${P(buying ? c.buyer : l.seller).nick} ${buying ? "קונה מ" : "מוכר/ת ל"}${other.nick} · ` : "";
+      const lastText = last ? (last.kind === "offer" ? `💰 ${last.amount} ₪` : last.body) : "שיחה חדשה";
+      return `<button class="card row" style="text-align:start" data-a="go" data-v="chat:${c.id}">
+        <div style="width:48px;border-radius:12px;overflow:hidden">${pic(l, "", "1.6rem")}</div>
+        <div class="grow"><b>${esc(l.title)}</b><div class="small muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(prefix + lastText)}</div></div>${av(other, "sm")}</button>`;
+    }).join("")}</div>` : `<p class="muted" style="text-align:center;padding:32px 0">עוד אין שיחות. מצאו משהו מגניב ביריד!</p>`}`;
+}
+
+function viewChat(id) {
+  const c = C(id), l = L(c.listing), u = me();
+  const buyer = P(c.buyer), seller = P(l.seller);
+  const deal = dealOf(id);
+  const buyerSide = u.fam === buyer.fam;
+  const participant = u.id === buyer.id || u.id === seller.id || (u.role === "parent" && (u.fam === buyer.fam || u.fam === seller.fam));
+  const kidInChat = u.id === buyer.id || u.id === seller.id;
+  const openDeal = deal && ["awaiting_parent", "approved"].includes(deal.status);
+  const other = u.id === buyer.id ? seller : buyer;
+  const sent = deal && S.stickers.find((x) => x.deal === deal.id);
+
+  let dealCard = "";
+  if (deal) {
+    const tone = deal.status === "completed" ? "ok" : deal.status === "approved" ? "brand" : ["declined", "cancelled"].includes(deal.status) ? "bad" : "warn";
+    dealCard = `<div class="card stack" style="border-color:var(--brand)">
+      <div class="row"><b class="grow">🤝 עסקה: ${deal.price} ₪</b><span class="badge ${tone}">${DEAL_STATUS[deal.status]}</span></div>
+      ${deal.status === "awaiting_parent" && u.role === "parent" && buyerSide ? `<div class="inline"><button class="btn" style="flex:1" data-a="decide" data-v="yes">✅ אישור הקנייה</button><button class="btn sec" data-a="decide" data-v="no">לא הפעם</button></div>` : ""}
+      ${deal.status === "awaiting_parent" && !(u.role === "parent" && buyerSide) ? `<p class="small muted">עברו ל"${P(parentsOf(buyer.fam)[0]).nick}" (${PERSONA_HINT[parentsOf(buyer.fam)[0]]}) למעלה כדי לאשר.</p>` : ""}
+      ${deal.status === "approved" ? `<p class="small">הורים: תאמו כאן מקום וזמן למסירה. התשלום במזומן או בביט, במסירה.</p>
+        <p class="small">קונה: ${deal.buyerOk ? "✅ קיבל/ה" : "⏳"} · מוכר/ת: ${deal.sellerOk ? "✅ מסר/ה" : "⏳"}</p>
+        ${participant && !(buyerSide ? deal.buyerOk : deal.sellerOk) ? `<button class="btn full" data-a="deliver">${buyerSide ? "קיבלתי ✅" : "נמסר ✅"}</button>` : ""}` : ""}
+      ${openDeal && u.role === "parent" && participant ? `<button class="btn ghost" data-a="cancelDeal" style="align-self:flex-start">ביטול העסקה</button>` : ""}
+      ${deal.status === "completed" && u.id === buyer.id && !sent ? `<b>שלחו מדבקת תודה 💛</b><div class="row" style="flex-wrap:wrap;gap:6px">${Object.entries(STICKERS).map(([k, v]) => `<button class="btn sec sm" data-a="sticker" data-v="${k}">${v}</button>`).join("")}</div>` : ""}
+      ${deal.status === "completed" && sent ? `<p>נשלחה מדבקה: ${STICKERS[sent.key]}</p>` : ""}
+    </div>`;
+  }
+
+  const msgs = c.msgs.map((m) => {
+    if (m.kind === "system") return `<div class="sys">${esc(m.body)}</div>`;
+    const s = P(m.from), mine = m.from === u.id;
+    let inner;
+    if (m.kind === "offer") {
+      const st = { pending: "מחכה לתשובה", accepted: "התקבלה! 🎉", declined: "נדחתה", countered: "נשלחה הצעה נגדית", expired: "לא בתוקף" }[m.status];
+      inner = `<div style="font-weight:700;font-size:1.1rem">💰 הצעה: ${m.amount} ₪</div><div class="small">${st}</div>
+        ${m.status === "pending" && kidInChat && !mine ? `<div class="stack" style="gap:6px;margin-top:6px">
+          <div class="inline"><button class="btn sm" style="flex:1" data-a="offerResp" data-v="accept" data-m="${m.id}">מסכים/ה 🤝</button><button class="btn sec sm" data-a="offerResp" data-v="decline" data-m="${m.id}">לא</button></div>
+          <div class="inline"><input class="in" id="ctr-${m.id}" type="number" min="1" max="${MAX_PRICE}" placeholder="מחיר אחר" style="padding:8px"><button class="btn sec sm" data-a="offerResp" data-v="counter" data-m="${m.id}">הצעה נגדית</button></div></div>` : ""}`;
+    } else inner = esc(m.body);
+    return `<div class="m ${mine ? "mine" : ""}">${av(s, "sm")}<div class="bubble"><div class="who">${esc(s.nick)}${s.role === "parent" ? " (הורה)" : ""}</div>${inner}${m.filtered ? `<div class="note">🚫 פרטים אישיים הוסתרו</div>` : ""}</div></div>`;
+  }).join("");
+
+  const templates = u.id === buyer.id ? BUYER_T : SELLER_T;
+  return `
+    <button class="card row" style="text-align:start;padding:10px" data-a="go" data-v="listing:${l.id}">
+      <div style="width:52px;border-radius:12px;overflow:hidden">${pic(l, "", "1.7rem")}</div>
+      <div class="grow"><b>${esc(l.title)}</b><div class="price">${l.price} ₪</div></div>
+      <div style="text-align:center" class="small">${av(other, "sm")}<div>${esc(other.nick)}</div></div>
+    </button>
+    ${u.role === "parent" ? `<p class="small muted" style="text-align:center">👀 את/ה צופה בשיחה כהורה. ההודעות שלך מסומנות "הורה".</p>` : ""}
+    ${dealCard}
+    <div class="msgs">${msgs}</div>
+    ${participant ? `<div class="composer">
+      ${kidInChat ? `<div class="chips">${templates.map((t) => `<button class="chip" data-a="tpl" data-v="${esc(t)}">${esc(t)}</button>`).join("")}</div>` : ""}
+      ${kidInChat && l.status === "active" && !openDeal ? `<div class="inline"><input class="in" id="offer-amt" type="number" min="1" max="${MAX_PRICE}" value="${l.price}" aria-label="מחיר"><button class="btn sec" data-a="offer">💰 הצעת מחיר</button></div>` : ""}
+      <form id="send" class="inline"><input class="in" id="msg" maxlength="500" autocomplete="off" placeholder="${kidInChat ? "נסו לכתוב מספר טלפון…" : "כתבו הודעה…"}"><button class="btn" type="submit">שליחה</button></form>
+    </div>` : ""}`;
+}
+
+function viewMe() {
+  const u = me();
+  const sales = S.deals.filter((d) => d.seller === u.id && d.status === "completed");
+  const st = S.stickers.filter((x) => x.to === u.id);
+  const counts = st.reduce((a, x) => ((a[x.key] = (a[x.key] || 0) + 1), a), {});
+  const mine = S.listings.filter((l) => l.seller === u.id);
+  return `
+    <div class="row">${av(u, "lg")}<div><h1>העסק של ${esc(u.nick)}</h1><p class="sub">${esc(u.full)}</p></div></div>
+    ${S.posted ? `<div class="okmsg">🚀 המודעה נשלחה! ההורים יאשרו אותה בקרוב.</div>` : ""}
+    <div class="stats">
+      <div class="card"><b class="price">${sales.reduce((s, d) => s + d.price, 0)} ₪</b><span class="small">הרווחתי</span></div>
+      <div class="card"><b>${sales.length}</b><span class="small">מכרתי</span></div>
+      <div class="card"><b>${st.length}</b><span class="small">מדבקות</span></div>
+    </div>
+    ${st.length ? `<div class="card"><b>המדבקות שלי 💛</b><div class="row" style="flex-wrap:wrap;gap:6px;margin-top:6px">${Object.entries(counts).map(([k, n]) => `<span class="badge brand">${STICKERS[k]} ×${n}</span>`).join("")}</div></div>` : ""}
+    <h2>המודעות שלי</h2>
+    ${mine.length ? `<div class="stack">${mine.map((l) => `<button class="card row" style="text-align:start;padding:10px" data-a="go" data-v="listing:${l.id}">
+      <div style="width:48px;border-radius:12px;overflow:hidden">${pic(l, "", "1.6rem")}</div>
+      <div class="grow"><b>${esc(l.title)}</b><div class="small">${l.price} ₪</div></div>${statusBadge(l.status)}</button>`).join("")}</div>`
+      : `<p class="muted">עוד לא העליתם מודעות.</p>`}`;
+}
+
+function viewParent() {
+  const u = me();
+  const kids = Object.values(PEOPLE).filter((p) => p.role === "kid" && p.fam === u.fam);
+  const pending = S.listings.filter((l) => l.status === "pending" && P(l.seller).fam === u.fam);
+  const toApprove = S.deals.filter((d) => d.status === "awaiting_parent" && P(d.buyer).fam === u.fam);
+  const toDeliver = S.deals.filter((d) => d.status === "approved" && (P(d.buyer).fam === u.fam || P(d.seller).fam === u.fam));
+  return `
+    <div><h1>אישורים ✅</h1><p class="sub">הילדים במשפחה: ${kids.map((k) => k.av + " " + esc(k.nick)).join(" · ")}</p></div>
+    <section class="stack"><h2>קניות שמחכות לאישור (${toApprove.length})</h2>
+      ${toApprove.length ? toApprove.map((d) => {
+        const l = L(d.listing), k = P(d.buyer);
+        return `<div class="card stack"><div class="row">${av(k, "sm")}<span><b>${esc(k.nick)}</b> רוצה לקנות <b>${esc(l.title)}</b> ב-<b>${d.price} ₪</b></span></div>
+          <button class="btn ghost small" style="align-self:flex-start;padding:0" data-a="go" data-v="chat:${d.conv}">לקריאת השיחה</button>
+          <div class="inline"><button class="btn" style="flex:1" data-a="decideInbox" data-v="yes" data-d="${d.id}">✅ אישור</button><button class="btn sec" data-a="decideInbox" data-v="no" data-d="${d.id}">לא הפעם</button></div></div>`;
+      }).join("") : `<p class="muted">אין כרגע.</p>`}
+    </section>
+    <section class="stack"><h2>מודעות שמחכות לאישור (${pending.length})</h2>
+      ${pending.length ? pending.map((l) => {
+        const k = P(l.seller);
+        return `<div class="card stack">
+          <div class="row">${av(k, "sm")}<b>${esc(k.nick)}</b> רוצה למכור:</div>
+          <div style="width:120px;border-radius:14px;overflow:hidden">${pic(l)}</div>
+          <div><b style="font-size:1.1rem">${esc(l.title)} · ${l.price} ₪</b><div class="small muted">${CATEGORIES[l.cat]} · ${CONDITIONS[l.cond]}</div></div>
+          <p>⭐ ${esc(l.coolest)}</p>
+          <fieldset style="border:0;padding:0;margin:0" class="stack"><legend style="font-weight:600;margin-bottom:4px">בדיקה לפני אישור</legend>
+            ${CHECKLIST.map((c, i) => `<label class="check"><input type="checkbox" class="chk-${l.id}"><span>${c}${i === 1 ? `<span class="small muted" style="display:block">אסור: ${FORBIDDEN.join(", ")}</span>` : ""}</span></label>`).join("")}
+          </fieldset>
+          <p class="err" id="perr-${l.id}" hidden>סמנו את כל הבדיקות לפני האישור</p>
+          <button class="btn full" data-a="approve" data-v="${l.id}">✅ אישור ופרסום</button>
+          <details><summary>לא מאשר/ת</summary><div class="stack" style="margin-top:8px"><textarea class="in" id="rej-${l.id}" rows="2" placeholder="הסבר קצר לילד/ה (רשות)"></textarea><button class="btn sec" style="align-self:flex-start" data-a="reject" data-v="${l.id}">החזרה לילד/ה</button></div></details>
+        </div>`;
+      }).join("") : `<p class="muted">אין כרגע.</p>`}
+    </section>
+    ${toDeliver.length ? `<section class="stack"><h2>מסירות לתיאום 📦</h2>${toDeliver.map((d) => `<button class="card" style="text-align:start" data-a="go" data-v="chat:${d.conv}">${P(d.buyer).fam === u.fam ? "קנייה" : "מכירה"}: <b>${esc(L(d.listing).title)}</b> · ${d.price} ₪ <span class="small" style="color:var(--brand)">לתיאום בצ׳אט ←</span></button>`).join("")}</section>` : ""}`;
+}
+
+function viewFamily() {
+  const u = me();
+  const kids = Object.values(PEOPLE).filter((p) => p.role === "kid" && p.fam === u.fam);
+  return `<h1>המשפחה שלי</h1>
+    <div class="stack">${kids.map((k) => `<div class="card row">${av(k)}<div class="grow"><b>${esc(k.nick)}</b><div class="small muted">${esc(k.full)}</div></div><button class="btn sec sm" data-a="kidLogin" data-v="${k.id}">כניסה כ${esc(k.nick)}</button></div>`).join("")}
+      <div class="card muted">➕ הוספת ילד/ה: כינוי, שם מלא, אווטאר וקוד סודי (באפליקציה האמיתית)</div></div>
+    <div class="card stack"><h2>קוד כניסה לילדים</h2><p class="muted small">הילדים נכנסים עם הקוד הזה + הקוד הסודי שלהם, מכל טלפון.</p>
+      <div style="font-size:1.8rem;font-weight:800;letter-spacing:.3em;text-align:center;background:var(--soft);border-radius:12px;padding:10px;direction:ltr">${u.fam === "cohen" ? "K7M2QX" : "R4PZ8N"}</div></div>
+    <div class="card stack"><h2>הזמנות</h2><p class="small muted">כדי להזמין כיתה או חוג פותחים יריד ושולחים את הקישור שלו.</p>
+      <button class="btn sec" data-a="toastOnly" data-v="באפליקציה האמיתית נוצר כאן קישור הזמנה לשיתוף בוואטסאפ">קישור להורה נוסף במשפחה</button></div>`;
+}
+
+function viewKidLogin(kidId) {
+  const k = P(kidId);
+  const pin = S.pin || "";
+  return `<div style="text-align:center" class="stack">
+    <div>${av(k, "lg")}</div><p style="font-weight:700;font-size:1.2rem">היי ${esc(k.nick)}! מה הקוד הסודי שלך?</p>
+    <p class="small muted">בהדגמה: 1234</p>
+    <div class="pin">${[0, 1, 2, 3].map((i) => `<i class="${i < pin.length ? "on" : ""}"></i>`).join("")}</div>
+    <div class="pad">${["1","2","3","4","5","6","7","8","9"].map((d) => `<button data-a="pin" data-v="${d}">${d}</button>`).join("")}
+      <button data-a="pin" data-v="del" aria-label="מחיקה">⌫</button><button data-a="pin" data-v="0">0</button><button data-a="go" data-v="family" style="font-size:.9rem">ביטול</button></div>
+    <p class="err" id="pin-err" hidden>הקוד הסודי לא נכון</p></div>`;
+}
+
+function viewNotes() {
+  const list = S.notes[S.me] || [];
+  return `<div class="row"><h1 class="grow">התראות 🔔</h1>${list.length ? `<button class="btn ghost" data-a="clearNotes">ניקוי</button>` : ""}</div>
+    ${list.length ? `<div class="stack">${list.map((n) => `<button class="card" style="text-align:start;border-color:var(--brand)" data-a="go" data-v="${n.v}"><b>${esc(n.t)}</b>${n.b ? `<div class="small">${esc(n.b)}</div>` : ""}</button>`).join("")}</div>`
+      : `<p class="muted" style="text-align:center;padding:32px 0">🔕 אין התראות</p>`}
+    <p class="small muted">באפליקציה האמיתית ההתראות מגיעות גם כ-Push לטלפון וגם במייל להורים.</p>`;
+}
+
+// ───── ציור ─────
+const KID_TABS = [["home", "🎪", "היריד"], ["sell", "➕", "למכור"], ["chats", "💬", "צ׳אטים"], ["me", "💰", "העסק שלי"]];
+const PARENT_TABS = [["parent", "✅", "אישורים"], ["home", "🎪", "היריד"], ["chats", "💬", "צ׳אטים"], ["family", "👨‍👩‍👧", "משפחה"]];
+
+function render() {
+  const u = me();
+  $("#personas").innerHTML = PERSONA_ORDER.map((id) => {
+    const p = P(id), n = unread(id);
+    return `<button class="persona" data-a="persona" data-v="${id}" aria-pressed="${S.me === id}">${av(p, "sm")}<span>${esc(p.nick)} · ${PERSONA_HINT[id]}</span>${n && S.me !== id ? `<span class="dot">${n}</span>` : ""}</button>`;
+  }).join("");
+  const n = unread(S.me);
+  $("#hdr").innerHTML = `<button class="bell" data-a="go" data-v="notes" aria-label="התראות">🔔${n ? `<span class="dot">${n}</span>` : ""}</button>${av(u, "sm")}`;
+  const tabs = u.role === "kid" ? KID_TABS : PARENT_TABS;
+  const base = S.view.split(":")[0];
+  $("#tabs").innerHTML = tabs.map(([v, i, t]) => `<button data-a="go" data-v="${v}" ${base === v || (v === "chats" && base === "chat") ? 'aria-current="page"' : ""}><span>${i}</span>${t}</button>`).join("");
+
+  const [v, arg] = S.view.split(":");
+  const views = { home: viewHome, listing: viewListing, sell: viewSell, chats: viewChats, chat: viewChat, me: viewMe, parent: viewParent, family: viewFamily, notes: viewNotes, kidlogin: viewKidLogin };
+  let fn = views[v] || viewHome;
+  if ((v === "sell" || v === "me") && u.role !== "kid") fn = viewParent;
+  if ((v === "parent" || v === "family") && u.role === "kid") fn = viewHome;
+  $("#view").innerHTML = fn(arg);
+  if (S.view.startsWith("chat:")) setTimeout(() => window.scrollTo({ top: document.body.scrollHeight }), 0);
+}
+
+// ───── פעולות (כמו פונקציות ה-SQL) ─────
+function sys(c, body) { c.msgs.push({ id: nid("m"), kind: "system", body }); }
+
+function makeOffer(c, amount) {
+  const l = L(c.listing);
+  if (!Number.isInteger(amount) || amount < 1 || amount > MAX_PRICE) return toast(`המחיר חייב להיות בין 1 ל-${MAX_PRICE} ₪`);
+  c.msgs.forEach((m) => { if (m.kind === "offer" && m.status === "pending") m.status = "expired"; });
+  c.msgs.push({ id: nid("m"), from: S.me, kind: "offer", amount, status: "pending" });
+  const other = S.me === c.buyer ? l.seller : c.buyer;
+  notify([other], `הצעת מחיר חדשה: ${amount} ₪`, l.title, "chat:" + c.id);
+}
+
+const actions = {
+  persona(v) { S.me = v; S.posted = false; S.pin = ""; const u = P(v); if (S.view.startsWith("chat:") || S.view.startsWith("listing:")) {} else S.view = u.role === "kid" ? "home" : "parent"; save(); render(); },
+  reset() { S = seed(); save(); render(); toast("ההדגמה אופסה"); },
+  go(v) { S.posted = v === "me" ? S.posted : false; go(v); },
+  cat(v) { S.cat = v; save(); render(); },
+  toastOnly(v) { toast(v); },
+  startChat(lid) {
+    let c = S.convs.find((x) => x.listing === lid && x.buyer === S.me);
+    if (!c) { c = { id: nid("c"), listing: lid, buyer: S.me, msgs: [] }; S.convs.push(c); }
+    go("chat:" + c.id);
+  },
+  withdraw(lid) { L(lid).status = "withdrawn"; save(); render(); toast("המודעה הורדה"); },
+  report() { toast("תודה! הדיווח נשלח למארגני היריד 🙏"); },
+  rmPhoto(i) { S.draft.photos.splice(Number(i), 1); save(); render(); },
+  tpl(t) { const c = C(S.view.split(":")[1]); c.msgs.push({ id: nid("m"), from: S.me, kind: "template", body: t }); save(); render(); },
+  offer() { const c = C(S.view.split(":")[1]); makeOffer(c, Number($("#offer-amt").value)); save(); render(); },
+  offerResp(action, el) {
+    const c = C(S.view.split(":")[1]), l = L(c.listing), m = c.msgs.find((x) => x.id === el.dataset.m);
+    if (action === "decline") { m.status = "declined"; }
+    else if (action === "counter") {
+      const amt = Number($("#ctr-" + m.id).value);
+      if (!amt) return toast("כתבו מחיר להצעה הנגדית");
+      m.status = "countered"; makeOffer(c, amt);
+    } else {
+      m.status = "accepted";
+      const d = { id: nid("d"), conv: c.id, listing: l.id, buyer: c.buyer, seller: l.seller, price: m.amount, status: "awaiting_parent", buyerOk: false, sellerOk: false };
+      S.deals.push(d);
+      sys(c, `סגרנו על ${m.amount} ₪! 🤝 מחכים לאישור של הורה הקונה.`);
+      notify(parentsOf(P(c.buyer).fam), "עסקה ממתינה לאישורך", `${l.title} ב-${m.amount} ₪`, "parent");
+    }
+    save(); render();
+  },
+  decide(v) { decideDeal(dealOf(S.view.split(":")[1]), v === "yes"); },
+  decideInbox(v, el) { decideDeal(S.deals.find((d) => d.id === el.dataset.d), v === "yes"); },
+  deliver() {
+    const d = dealOf(S.view.split(":")[1]), c = C(d.conv);
+    if (P(S.me).fam === P(d.buyer).fam) d.buyerOk = true; else d.sellerOk = true;
+    if (d.buyerOk && d.sellerOk) {
+      d.status = "completed"; L(d.listing).status = "sold";
+      sys(c, "נמסר! ✅ העסקה הושלמה. אפשר לשלוח מדבקת תודה 💛");
+      notify([d.buyer], "העסקה הושלמה — שלחו מדבקת תודה 💛", "", "chat:" + c.id);
+    }
+    save(); render();
+  },
+  cancelDeal() {
+    const d = dealOf(S.view.split(":")[1]);
+    d.status = "cancelled"; const l = L(d.listing); if (l.status === "reserved") l.status = "active";
+    sys(C(d.conv), "העסקה בוטלה על ידי הורה."); save(); render();
+  },
+  sticker(k) {
+    const d = dealOf(S.view.split(":")[1]);
+    S.stickers.push({ to: d.seller, key: k, deal: d.id });
+    notify([d.seller], "קיבלת מדבקת תודה! 💛", STICKERS[k], "me");
+    save(); render(); toast("המדבקה נשלחה! 💛");
+  },
+  approve(lid) {
+    const boxes = [...document.querySelectorAll(".chk-" + lid)];
+    if (!boxes.every((b) => b.checked)) { $("#perr-" + lid).hidden = false; return; }
+    const l = L(lid); l.status = "active";
+    notify([l.seller], "המודעה שלך אושרה! 🎉", `${l.title} עלתה ליריד`, "listing:" + l.id);
+    save(); render(); toast("אושר ועלה ליריד 🎉");
+  },
+  reject(lid) {
+    const l = L(lid); l.status = "rejected"; l.reason = $("#rej-" + lid).value.trim();
+    notify([l.seller], "המודעה לא אושרה", l.reason || l.title, "me");
+    save(); render(); toast("נשלח חזרה לילד/ה");
+  },
+  kidLogin(kid) { S.pin = ""; go("kidlogin:" + kid); },
+  pin(d) {
+    const kid = S.view.split(":")[1];
+    S.pin = d === "del" ? (S.pin || "").slice(0, -1) : ((S.pin || "") + d).slice(0, 4);
+    if (S.pin.length === 4) {
+      if (S.pin === "1234") { S.pin = ""; S.me = kid; S.view = "home"; save(); render(); return toast(`נכנסת כ${P(kid).nick}`); }
+      S.pin = ""; render(); $("#pin-err").hidden = false; return;
+    }
+    render();
+  },
+  clearNotes() { S.notes[S.me] = []; save(); render(); },
+};
+
+function decideDeal(d, approve) {
+  const c = C(d.conv), l = L(d.listing);
+  if (approve) {
+    if (l.status !== "active") return toast("המודעה כבר לא זמינה");
+    d.status = "approved"; l.status = "reserved";
+    S.convs.filter((x) => x.listing === l.id).forEach((x) => x.msgs.forEach((m) => { if (m.kind === "offer" && m.status === "pending") m.status = "expired"; }));
+    sys(c, "ההורה אישר/ה את העסקה ✅ עכשיו ההורים מתאמים מקום וזמן למסירה. התשלום במזומן או בביט, במסירה.");
+    notify([d.seller], "העסקה אושרה! 🎉", l.title, "chat:" + c.id);
+    notify([d.buyer], "ההורה אישר/ה את הקנייה! 🎉", l.title, "chat:" + c.id);
+    notify(parentsOf(P(d.seller).fam), "עסקה אושרה — תאמו מסירה", l.title, "chat:" + c.id);
+  } else {
+    d.status = "declined";
+    sys(c, "הפעם ההורה לא אישר/ה את העסקה.");
+    notify([d.seller], "העסקה לא אושרה", l.title, "chat:" + c.id);
+  }
+  save(); render();
+}
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-a]");
+  if (!el) return;
+  const fn = actions[el.dataset.a];
+  if (fn) { e.preventDefault(); fn(el.dataset.v, el); }
+});
+
+document.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (e.target.id === "send") {
+    const c = C(S.view.split(":")[1]);
+    const raw = $("#msg").value.trim();
+    if (!raw) return;
+    const body = P(S.me).role === "kid" ? filterKid(raw) : raw;
+    c.msgs.push({ id: nid("m"), from: S.me, kind: "text", body, filtered: body !== raw });
+    save(); render();
+  }
+  if (e.target.id === "sell") {
+    const title = $("#s-title").value.trim(), cool = $("#s-cool").value.trim(), price = Number($("#s-price").value);
+    const err = $("#s-err");
+    const fail = (t) => { err.textContent = t; err.hidden = false; };
+    if (title.length < 2) return fail("כתבו מה אתם מוכרים");
+    if (cool.length < 2) return fail("ספרו למה זה הכי מגניב ⭐");
+    if (!Number.isInteger(price) || price < 1 || price > MAX_PRICE) return fail(`המחיר צריך להיות בין 1 ל-${MAX_PRICE} ₪`);
+    const cat = $("#s-cat").value;
+    const emojis = { toys: "🧸", books: "📚", games: "🎲", lego: "🧱", dolls: "🪆", sports: "🏀", crafts: "🎨", other: "🎁" };
+    const l = { id: nid("l"), seller: S.me, title, coolest: cool, desc: "", price, cat, cond: $("#s-cond").value, emoji: emojis[cat], bg: "#ede9fe", status: "pending", photo: S.draft.photos[0] || null };
+    S.listings.push(l);
+    S.draft = { photos: [] };
+    notify(parentsOf(P(S.me).fam), "מודעה חדשה ממתינה לאישור", `${P(S.me).nick} רוצה למכור: ${title}`, "parent");
+    S.posted = true; go("me");
+  }
+});
+
+// תמונות: מקטינים בדפדפן כדי לא לנפח את האחסון המקומי
+document.addEventListener("change", (e) => {
+  if (e.target.id !== "photo-in") return;
+  const files = [...e.target.files].slice(0, 4 - S.draft.photos.length);
+  let left = files.length;
+  files.forEach((f) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 480 / Math.max(img.width, img.height));
+      const cv = document.createElement("canvas"); cv.width = img.width * s; cv.height = img.height * s;
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+      S.draft.photos.push(cv.toDataURL("image/jpeg", 0.7));
+      URL.revokeObjectURL(img.src);
+      if (--left === 0) { save(); render(); }
+    };
+    img.src = URL.createObjectURL(f);
+  });
+});
+
+render();
+</script>
